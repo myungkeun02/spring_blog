@@ -45,8 +45,8 @@ public class ApplicationConfig {
 
     // 인증 매니저를 생성 authenticationConfiguration 를 사용하여 인증매니저를 가져옴
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
+        return configuration.getAuthenticationManager();
     }
 
     @Bean

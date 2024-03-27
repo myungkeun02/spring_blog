@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.myungkeun.spring_blog.payload.PostDto;
 import org.myungkeun.spring_blog.payload.PostsResponseDto;
 import org.myungkeun.spring_blog.services.PostService;
+import org.myungkeun.spring_blog.utill.AppConstants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,10 +32,10 @@ public class PostController {
 
     @GetMapping("/all")
     public ResponseEntity<PostsResponseDto> getAllPost(
-            int pageNo,
-            int pageSize,
-            String sortBy,
-            String sortDir
+            @RequestParam(value = "pageNo", defaultValue = AppConstants.DEFAULT_PAGE_NUMBER, required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = AppConstants.DEFAULT_PAGE_SIZE, required = false) int pageSize,
+            @RequestParam(value = "sortBy", defaultValue = AppConstants.DEFAULT_SORT_BY, required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = AppConstants.DEFAULT_SORT_DIRECTION, required = false) String sortDir
     ) {
         return new ResponseEntity<>(postService.getAllPost(pageNo, pageSize, sortBy, sortDir), HttpStatus.OK);
     }
