@@ -1,12 +1,10 @@
 package org.myungkeun.spring_blog.audting;
 
 import org.myungkeun.spring_blog.entities.User;
-
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.Optional;
 
 public class ApplicationAuditAware implements AuditorAware<Long> {
@@ -24,3 +22,4 @@ public class ApplicationAuditAware implements AuditorAware<Long> {
         return Optional.ofNullable(userPrincipal.getId());
     }
 }
+
