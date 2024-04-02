@@ -3,6 +3,9 @@ package org.myungkeun.spring_blog.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.myungkeun.spring_blog.exception.UserAlreadyExistsException;
+import org.myungkeun.spring_blog.exception.UserNotFoundException;
+import org.myungkeun.spring_blog.exception.UserServiceLogicException;
 import org.myungkeun.spring_blog.payload.UserLoginRequestDto;
 import org.myungkeun.spring_blog.payload.UserLoginResponseDto;
 import org.myungkeun.spring_blog.payload.UserRegisterRequestDto;
@@ -25,14 +28,14 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<String> registerUser(
             @RequestBody UserRegisterRequestDto requestDto
-            ) {
+            ) throws UserAlreadyExistsException, UserServiceLogicException {
         return new ResponseEntity<>(authService.registerUser(requestDto), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> loginUser(
             @RequestBody UserLoginRequestDto requestDto
-            ) {
+            ) throws UserNotFoundException, UserServiceLogicException {
         return new ResponseEntity<>(authService.loginUser(requestDto), HttpStatus.OK);
     }
 

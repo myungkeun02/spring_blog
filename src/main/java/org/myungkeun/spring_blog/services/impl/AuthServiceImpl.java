@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.myungkeun.spring_blog.entities.Role;
 import org.myungkeun.spring_blog.entities.Token;
 import org.myungkeun.spring_blog.entities.User;
+import org.myungkeun.spring_blog.exception.UserAlreadyExistsException;
+import org.myungkeun.spring_blog.exception.UserNotFoundException;
+import org.myungkeun.spring_blog.exception.UserServiceLogicException;
 import org.myungkeun.spring_blog.payload.UserLoginRequestDto;
 import org.myungkeun.spring_blog.payload.UserLoginResponseDto;
 import org.myungkeun.spring_blog.payload.UserRegisterRequestDto;
@@ -31,35 +34,52 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     @Override
-    public String registerUser(UserRegisterRequestDto registerRequest) {
-        var user = User.builder()
+    public String registerUser(UserRegisterRequestDto registerRequest) throws UserAlreadyExistsException, UserServiceLogicException {
+        try {
+          if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+              throw new UserAlreadyExistsException("register failed: user already exists with email " + registerRequest.getEmail());
+          }
+          var user = User.builder()
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .role(Role.USER)
                 .build();
-        userRepository.save(user);
-        return "user registered successfully";
+            userRepository.save(user);
+            return "user registered successfully";
+        } catch (UserAlreadyExistsException e) {
+            throw new UserAlreadyExistsException(e.getMessage());
+        } catch (Exception e) {
+            throw new UserServiceLogicException();
+        }
+
     }
 
     @Override
-    public UserLoginResponseDto loginUser(UserLoginRequestDto loginRequest) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
-        var user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
-        return UserLoginResponseDto.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
-                .build();
+    public UserLoginResponseDto loginUser(UserLoginRequestDto loginRequest) throws UserNotFoundException, UserServiceLogicException {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+            var user = userRepository.findByEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+            var jwtToken = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+            revokeAllUserTokens(user);
+            saveUserToken(user, jwtToken);
+            return UserLoginResponseDto.builder()
+                    .accessToken(jwtToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        } catch (UserNotFoundException e) {
+            throw new UserNotFoundException(e.getMessage());
+        } catch (Exception e) {
+            throw new UserServiceLogicException();
+        }
+
     }
 
     @Override
